@@ -1,0 +1,12 @@
+{
+  "class" : "com.example.jsonparser.Person",
+  "name": "person.name",
+  "age": "person.age",
+  "orders" :
+    {
+      "class" : "com.example.jsonparser.Order",
+      "count" : "person.order",
+      "id" : "person.order[%d].id",
+      "name" : "person.order[%d].name"
+    }
+}
