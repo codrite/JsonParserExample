@@ -5,8 +5,8 @@
   "orders" :
     {
       "class" : "com.example.jsonparser.Order",
-      "count" : "person.order",
-      "id" : "person.order[%d].id",
-      "name" : "person.order[%d].name"
+      "count" : "person.orders",
+      "id" : "person.orders[%d].id",
+      "name" : "person.orders[%d].item"
     }
 }

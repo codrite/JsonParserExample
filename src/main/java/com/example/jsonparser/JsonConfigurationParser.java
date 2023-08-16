@@ -69,20 +69,7 @@ public class JsonConfigurationParser {
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Map<String, Object> map = new HashMap<>();
-
-        map.put("class", "com.example.jsonparser.Person");
-        map.put("name", "person.name");
-        map.put("age", "person.age");
-
-        Map<String, String> orderMap = new HashMap<>();
-        orderMap.put("class", "com.example.jsonparser.Order");
-        orderMap.put("count", "person.orders");
-        orderMap.put("id", "person.orders[%d].id");
-        orderMap.put("name", "person.orders[%d].item");
-
-        map.put("orders", orderMap);
-
+        Map<String, Object> map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("personSchema.json").getFile().toPath())));
         final String json = new String(Files.readAllBytes(new ClassPathResource("input.json").getFile().toPath()));
         JsonConfigurationParser jsonConfigurationParser = new JsonConfigurationParser();
         Person person = jsonConfigurationParser.readObject(JsonPath.parse(json), map);
