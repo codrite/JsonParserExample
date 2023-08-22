@@ -17,11 +17,13 @@ import java.util.Map;
 
 @Slf4j
 public class JsonConfigurationParser {
+    final static String SEPARATOR = ".";
+    final static String ARRAY_SIZE = "count";
 
     public JsonConfigurationParser() {}
 
     public Object read(final DocumentContext documentContext, Map<String, Object> path) {
-        boolean isRootArray = (path.get("class") != null && path.get("count") != null);
+        boolean isRootArray = (path.get("class") != null && path.get(ARRAY_SIZE) != null);
         try {
             return (isRootArray ?
                 this.readArray(documentContext, path, "$")
@@ -43,15 +45,17 @@ public class JsonConfigurationParser {
         for (Field f : field) {
             f.setAccessible(true);
             Object o = path.get(f.getName());
-            if(isJsonArray(o))
+            if(isJsonArray(o)) {
                 f.set(t, readArray(documentContext, (Map<String, Object>)o, basePath));
+            }
 
-            if(isJsonObject(o))
+            if(isJsonObject(o)) {
                 f.set(t, readObject(documentContext, (Map<String, Object>)o, basePath));
+            }
 
             if(o instanceof String) {
-                log.debug("Field : " + clazz + "." + f.getName() + ", value : " + o);
-                f.set(t, documentContext.read("$." + basePath + "." + o));
+                log.debug("Field : " + clazz + SEPARATOR + f.getName() + ", value : " + o);
+                f.set(t, documentContext.read("$." + basePath + SEPARATOR + o));
             }
         }
 
@@ -62,7 +66,7 @@ public class JsonConfigurationParser {
     public <T> T readObject(final DocumentContext documentContext, Map<String, Object> path, String parentBasePath)
             throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
         String clazz = (String)path.get("class");
-        String basePath = parentBasePath + "." + path.get("basePath");
+        String basePath = parentBasePath + SEPARATOR + path.get("basePath");
         T t = (T) Class.forName(clazz).getDeclaredConstructors()[0].newInstance();
         Field[] field = t.getClass().getDeclaredFields();
 
@@ -70,11 +74,11 @@ public class JsonConfigurationParser {
             f.setAccessible(true);
             Object o = path.get(f.getName());
             if(o instanceof String) {
-                log.debug("Append Base Path and Current Path : {}", (basePath + "." + o));
+                log.debug("Append Base Path and Current Path : {}", (basePath + SEPARATOR + o));
                 try {
-                    f.set(t, documentContext.read(basePath + "." + o));
+                    f.set(t, documentContext.read(basePath + SEPARATOR + o));
                 } catch (Exception e) {
-                    log.error("Missing Json path : {}", basePath + "." + o);
+                    log.error("Missing Json path : {}", basePath + SEPARATOR + o);
                 }
             }
         }
@@ -86,8 +90,8 @@ public class JsonConfigurationParser {
     public <T> List<T> readArray(final DocumentContext documentContext, Map<String, Object> path, String parentBasePath)
             throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
         List<T> list = new ArrayList<>();
-        String countPath = parentBasePath + "." + path.get("count");
-        String basePath = parentBasePath + "." + path.get("basePath");
+        String countPath = parentBasePath + SEPARATOR + path.get(ARRAY_SIZE);
+        String basePath = parentBasePath + SEPARATOR + path.get("basePath");
         String clazz = (String)path.get("class");
 
         log.debug("Base Path : {}, Count Path : {}", basePath, countPath);
@@ -118,8 +122,8 @@ public class JsonConfigurationParser {
                     f.set(t, readObject(documentContext, (Map<String, Object>) o, pathValue));
 
                 if(o instanceof String) {
-                    log.debug("Field : {}, value : {}", clazz + "." + f.getName(), pathValue + "." + o);
-                    f.set(t, documentContext.read(pathValue + "." + o));
+                    log.debug("Field : {}, value : {}", clazz + SEPARATOR + f.getName(), pathValue + SEPARATOR + o);
+                    f.set(t, documentContext.read(pathValue + SEPARATOR + o));
                 }
             }
             list.add(t);
@@ -137,17 +141,24 @@ public class JsonConfigurationParser {
     }
 
     public static void main(String[] args) throws IOException {
-        Map<String, Object> map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("orderSchema.json").getFile().toPath())));
-        String json = new String(Files.readAllBytes(new ClassPathResource("orders.json").getFile().toPath()));
-        JsonConfigurationParser jsonConfigurationParser = new JsonConfigurationParser();
-        Object order = jsonConfigurationParser.read(JsonPath.parse(json), map);
+        Object order = parseJsonUsingSchema("orders.json","orderSchema.json");
         log.info(order.toString());
 
-        map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("personSchema.json").getFile().toPath())));
-        json = new String(Files.readAllBytes(new ClassPathResource("person.json").getFile().toPath()));
-        jsonConfigurationParser = new JsonConfigurationParser();
-        Object person = jsonConfigurationParser.read(JsonPath.parse(json), map);
+        Object person = parseJsonUsingSchema("person.json","personSchema.json");
         log.info(person.toString());
+    }
+
+    static Object parseJsonUsingSchema(final String jsonFile, final String schema) throws IOException {
+        JsonConfigurationParser jsonConfigurationParser = new JsonConfigurationParser();
+        return jsonConfigurationParser.read(JsonPath.parse(readFile(jsonFile)), schema(schema));
+    }
+
+    static String readFile(final String file) throws IOException {
+        return new String(Files.readAllBytes(new ClassPathResource(file).getFile().toPath()));
+    }
+
+    static Map<String, Object> schema(final String file) throws IOException {
+        return JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource(file).getFile().toPath())));
     }
 
 }
