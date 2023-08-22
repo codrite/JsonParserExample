@@ -27,10 +27,10 @@ public class JsonConfigurationParser {
         for (Field f : field) {
             f.setAccessible(true);
             Object o = path.get(f.getName());
-            if(o instanceof Map && ((Map<?, ?>) o).containsKey("count"))
+            if(isJsonArray(o))
                 f.set(t, readArray(documentContext, (Map<String, Object>)o, basePath));
 
-            if(o instanceof Map && !((Map<?, ?>) o).containsKey("count"))
+            if(isJsonObject(o))
                 f.set(t, readObject(documentContext, (Map<String, Object>)o, basePath));
 
             if(o instanceof String) {
@@ -57,7 +57,9 @@ public class JsonConfigurationParser {
                 log.info("Append Base Path and Current Path : {}", (basePath + "." + o));
                 try {
                     f.set(t, documentContext.read(basePath + "." + o));
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    log.error("Missing Json path : {}", basePath + "." + o);
+                }
             }
         }
 
@@ -78,8 +80,10 @@ public class JsonConfigurationParser {
         try {
             object = documentContext.read(countPath);
         } catch (Exception e) {
+            log.error("Missing Json path : {}", countPath);
             return null;
         }
+
         if(!(object instanceof JSONArray))
             return Collections.EMPTY_LIST;
 
@@ -91,10 +95,10 @@ public class JsonConfigurationParser {
             for (Field f : field) {
                 f.setAccessible(true);
                 Object o = path.get(f.getName());
-                if (o instanceof Map && ((Map<?, ?>) o).containsKey("count"))
+                if (isJsonArray(o))
                     f.set(t, readArray(documentContext, (Map<String, Object>) o, pathValue));
 
-                if (o instanceof Map && !((Map<?, ?>) o).containsKey("count"))
+                if (isJsonObject(o))
                     f.set(t, readObject(documentContext, (Map<String, Object>) o, pathValue));
 
                 if(o instanceof String) {
@@ -106,6 +110,14 @@ public class JsonConfigurationParser {
         }
 
         return list;
+    }
+
+    boolean isJsonArray(Object o) {
+        return o instanceof Map && ((Map<?, ?>) o).containsKey("count");
+    }
+
+    boolean isJsonObject(Object o) {
+        return o instanceof Map && !((Map<?, ?>) o).containsKey("count");
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
