@@ -2,6 +2,7 @@ package com.example.jsonparser;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.springframework.core.io.ClassPathResource;
 
@@ -11,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.util.*;
 
+@Slf4j
 public class JsonConfigurationParser {
 
     public JsonConfigurationParser() {}
@@ -32,7 +34,7 @@ public class JsonConfigurationParser {
                 f.set(t, readObject(documentContext, (Map<String, Object>)o, basePath));
 
             if(o instanceof String) {
-                System.out.println("Field : " + f.getName() + ", value : " + o);
+                log.info("Field : " + clazz + "." + f.getName() + ", value : " + o);
                 f.set(t, documentContext.read("$." + basePath + "." + o));
             }
         }
@@ -52,7 +54,7 @@ public class JsonConfigurationParser {
             f.setAccessible(true);
             Object o = path.get(f.getName());
             if(o instanceof String) {
-                System.out.println(basePath + "." + o);
+                log.info("Append Base Path and Current Path : {}", (basePath + "." + o));
                 try {
                     f.set(t, documentContext.read(basePath + "." + o));
                 } catch (Exception e) {}
@@ -70,9 +72,8 @@ public class JsonConfigurationParser {
         String basePath = parentBasePath + "." + path.get("basePath");
         String clazz = (String)path.get("class");
 
-        int count = 0;
-        System.out.println("Base Path : " + basePath);
-
+        log.info("Base Path : {}, Count Path : {}", basePath, countPath);
+        int count;
         Object object;
         try {
             object = documentContext.read(countPath);
@@ -97,7 +98,7 @@ public class JsonConfigurationParser {
                     f.set(t, readObject(documentContext, (Map<String, Object>) o, pathValue));
 
                 if(o instanceof String) {
-                    System.out.println("Field : " + f.getName() + ", value : " + pathValue + "." + o);
+                    log.info("Field : {}, value : {}", clazz + "." + f.getName(), pathValue + "." + o);
                     f.set(t, documentContext.read(pathValue + "." + o));
                 }
             }
