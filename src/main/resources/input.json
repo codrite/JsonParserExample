@@ -1,37 +1,30 @@
 {
-  "ExternalJson" :
-  {
-    "field1" : "John",
-    "field2" : 30,
-    "field3" : [
-      {
-        "field4" : 1,
-        "field5" : "book",
-        "field6" :
-            {
-              "field7" : 1,
-              "field8" : "F"
-            }
-      },
-      {
-        "field4" : 2,
-        "field5" : "computer",
-        "field6" :
-            {
-              "field7" : 2,
-              "field8" : "G"
-            },
-        "field9" : [
-          {
-            "field10" : 1,
-            "field11": "residential"
-          },
-          {
-            "field10" : 2,
-            "field11": "official"
-          }
-        ]
+  "orders": [
+    {
+      "field4": 1,
+      "field5": "book",
+      "field6": {
+        "field7": 1,
+        "field8": "F"
       }
-    ]
-  }
+    },
+    {
+      "field4": 2,
+      "field5": "computer",
+      "field6": {
+        "field7": 2,
+        "field8": "G"
+      },
+      "field9": [
+        {
+          "field10": 1,
+          "field11": "residential"
+        },
+        {
+          "field10": 2,
+          "field11": "official"
+        }
+      ]
+    }
+  ]
 }

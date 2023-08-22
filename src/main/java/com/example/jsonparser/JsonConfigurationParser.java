@@ -17,6 +17,19 @@ public class JsonConfigurationParser {
 
     public JsonConfigurationParser() {}
 
+    public Object read(final DocumentContext documentContext, Map<String, Object> path) {
+        String clazz = (String)path.get("class");
+        try {
+            return ((clazz != null) ?
+                this.readArray(documentContext, path, "$")
+                :
+                this.readObject(documentContext, path));
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            return null;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T readObject(final DocumentContext documentContext, Map<String, Object> path)
             throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -124,7 +137,7 @@ public class JsonConfigurationParser {
         Map<String, Object> map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("personSchema.json").getFile().toPath())));
         final String json = new String(Files.readAllBytes(new ClassPathResource("input.json").getFile().toPath()));
         JsonConfigurationParser jsonConfigurationParser = new JsonConfigurationParser();
-        Person person = jsonConfigurationParser.readObject(JsonPath.parse(json), map);
+        Object person = jsonConfigurationParser.read(JsonPath.parse(json), map);
         System.out.println(person);
     }
 
