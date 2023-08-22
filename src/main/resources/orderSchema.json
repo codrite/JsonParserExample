@@ -1,0 +1,21 @@
+{
+    "class" : "com.example.jsonparser.Order",
+    "count" : "orders",
+    "basePath" : "orders[%d]",
+    "id" : "field4",
+    "name" : "field5",
+    "orderType" : {
+                      "class" : "com.example.jsonparser.OrderType",
+                      "basePath" : "field6",
+                      "id" : "field7",
+                      "type" : "field8"
+                   },
+    "addresses" :
+                    {
+                      "class" : "com.example.jsonparser.Address",
+                      "count" : "field9",
+                      "basePath" : "field9[%d]",
+                      "id" : "field10",
+                      "type" : "field11"
+                    }
+}

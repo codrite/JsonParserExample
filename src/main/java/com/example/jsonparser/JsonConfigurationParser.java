@@ -134,9 +134,15 @@ public class JsonConfigurationParser {
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Map<String, Object> map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("personSchema.json").getFile().toPath())));
-        final String json = new String(Files.readAllBytes(new ClassPathResource("input.json").getFile().toPath()));
+        Map<String, Object> map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("orderSchema.json").getFile().toPath())));
+        String json = new String(Files.readAllBytes(new ClassPathResource("orders.json").getFile().toPath()));
         JsonConfigurationParser jsonConfigurationParser = new JsonConfigurationParser();
+        Object order = jsonConfigurationParser.read(JsonPath.parse(json), map);
+        System.out.println(order);
+
+        map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("personSchema.json").getFile().toPath())));
+        json = new String(Files.readAllBytes(new ClassPathResource("person.json").getFile().toPath()));
+        jsonConfigurationParser = new JsonConfigurationParser();
         Object person = jsonConfigurationParser.read(JsonPath.parse(json), map);
         System.out.println(person);
     }
