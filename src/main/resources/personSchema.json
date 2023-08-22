@@ -1,12 +1,28 @@
 {
   "class" : "com.example.jsonparser.Person",
-  "name": "person.name",
-  "age": "person.age",
+  "basePath" : "ExternalJson",
+  "name": "field1",
+  "age": "field2",
   "orders" :
-    {
-      "class" : "com.example.jsonparser.Order",
-      "count" : "person.orders",
-      "id" : "person.orders[%d].id",
-      "name" : "person.orders[%d].item"
-    }
+            {
+              "class" : "com.example.jsonparser.Order",
+              "count" : "field3",
+              "basePath" : "field3[%d]",
+              "id" : "field4",
+              "name" : "field5",
+              "orderType" : {
+                                "class" : "com.example.jsonparser.OrderType",
+                                "basePath" : "field6",
+                                "id" : "field7",
+                                "type" : "field8"
+                             },
+              "addresses" :
+                              {
+                                "class" : "com.example.jsonparser.Address",
+                                "count" : "field9",
+                                "basePath" : "field9[%d]",
+                                "id" : "field10",
+                                "type" : "field11"
+                              }
+            }
 }

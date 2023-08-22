@@ -21,15 +21,19 @@ public class JsonConfigurationParser {
         String clazz = (String)path.get("class");
         T t = (T) Class.forName(clazz).getDeclaredConstructors()[0].newInstance();
         Field[] field = t.getClass().getDeclaredFields();
-
+        final String basePath = (String)path.get("basePath");
         for (Field f : field) {
             f.setAccessible(true);
             Object o = path.get(f.getName());
-            if(o instanceof Map)
-                f.set(t, readTree(documentContext, (Map<String, Object>)o));
+            if(o instanceof Map && ((Map<?, ?>) o).containsKey("count"))
+                f.set(t, readArray(documentContext, (Map<String, Object>)o, basePath));
+
+            if(o instanceof Map && !((Map<?, ?>) o).containsKey("count"))
+                f.set(t, readObject(documentContext, (Map<String, Object>)o, basePath));
+
             if(o instanceof String) {
                 System.out.println("Field : " + f.getName() + ", value : " + o);
-                f.set(t, documentContext.read("$." + o));
+                f.set(t, documentContext.read("$." + basePath + "." + o));
             }
         }
 
@@ -37,13 +41,44 @@ public class JsonConfigurationParser {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<T> readTree(final DocumentContext documentContext, Map<String, Object> path)
+    public <T> T readObject(final DocumentContext documentContext, Map<String, Object> path, String parentBasePath)
+            throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        String clazz = (String)path.get("class");
+        String basePath = parentBasePath + "." + path.get("basePath");
+        T t = (T) Class.forName(clazz).getDeclaredConstructors()[0].newInstance();
+        Field[] field = t.getClass().getDeclaredFields();
+
+        for (Field f : field) {
+            f.setAccessible(true);
+            Object o = path.get(f.getName());
+            if(o instanceof String) {
+                System.out.println(basePath + "." + o);
+                try {
+                    f.set(t, documentContext.read(basePath + "." + o));
+                } catch (Exception e) {}
+            }
+        }
+
+        return t;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> readArray(final DocumentContext documentContext, Map<String, Object> path, String parentBasePath)
             throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
         List<T> list = new ArrayList<>();
+        String countPath = parentBasePath + "." + path.get("count");
+        String basePath = parentBasePath + "." + path.get("basePath");
         String clazz = (String)path.get("class");
 
         int count = 0;
-        Object object = documentContext.read("$." + path.get("count"));
+        System.out.println("Base Path : " + basePath);
+
+        Object object;
+        try {
+            object = documentContext.read(countPath);
+        } catch (Exception e) {
+            return null;
+        }
         if(!(object instanceof JSONArray))
             return Collections.EMPTY_LIST;
 
@@ -51,15 +86,19 @@ public class JsonConfigurationParser {
         for(int i = 0; i < count; i++) {
             T t = (T) Class.forName(clazz).getDeclaredConstructors()[0].newInstance();
             Field[] field = t.getClass().getDeclaredFields();
+            final String pathValue = String.format(basePath, i);
             for (Field f : field) {
                 f.setAccessible(true);
                 Object o = path.get(f.getName());
-                if (o instanceof Map)
-                    f.set(t, readTree(documentContext, (Map<String, Object>) o));
+                if (o instanceof Map && ((Map<?, ?>) o).containsKey("count"))
+                    f.set(t, readArray(documentContext, (Map<String, Object>) o, pathValue));
+
+                if (o instanceof Map && !((Map<?, ?>) o).containsKey("count"))
+                    f.set(t, readObject(documentContext, (Map<String, Object>) o, pathValue));
 
                 if(o instanceof String) {
-                    System.out.println("Field : " + f.getName() + ", value : " + o);
-                    f.set(t, documentContext.read("$." + String.format((String)o, i)));
+                    System.out.println("Field : " + f.getName() + ", value : " + pathValue + "." + o);
+                    f.set(t, documentContext.read(pathValue + "." + o));
                 }
             }
             list.add(t);
