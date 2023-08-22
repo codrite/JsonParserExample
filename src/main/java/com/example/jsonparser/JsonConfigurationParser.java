@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class JsonConfigurationParser {
@@ -133,7 +136,7 @@ public class JsonConfigurationParser {
         return o instanceof Map && !((Map<?, ?>) o).containsKey("count");
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static void main(String[] args) throws IOException {
         Map<String, Object> map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("orderSchema.json").getFile().toPath())));
         String json = new String(Files.readAllBytes(new ClassPathResource("orders.json").getFile().toPath()));
         JsonConfigurationParser jsonConfigurationParser = new JsonConfigurationParser();
