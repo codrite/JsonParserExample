@@ -50,7 +50,7 @@ public class JsonConfigurationParser {
                 f.set(t, readObject(documentContext, (Map<String, Object>)o, basePath));
 
             if(o instanceof String) {
-                log.info("Field : " + clazz + "." + f.getName() + ", value : " + o);
+                log.debug("Field : " + clazz + "." + f.getName() + ", value : " + o);
                 f.set(t, documentContext.read("$." + basePath + "." + o));
             }
         }
@@ -70,7 +70,7 @@ public class JsonConfigurationParser {
             f.setAccessible(true);
             Object o = path.get(f.getName());
             if(o instanceof String) {
-                log.info("Append Base Path and Current Path : {}", (basePath + "." + o));
+                log.debug("Append Base Path and Current Path : {}", (basePath + "." + o));
                 try {
                     f.set(t, documentContext.read(basePath + "." + o));
                 } catch (Exception e) {
@@ -90,7 +90,7 @@ public class JsonConfigurationParser {
         String basePath = parentBasePath + "." + path.get("basePath");
         String clazz = (String)path.get("class");
 
-        log.info("Base Path : {}, Count Path : {}", basePath, countPath);
+        log.debug("Base Path : {}, Count Path : {}", basePath, countPath);
         int count;
         Object object;
         try {
@@ -118,7 +118,7 @@ public class JsonConfigurationParser {
                     f.set(t, readObject(documentContext, (Map<String, Object>) o, pathValue));
 
                 if(o instanceof String) {
-                    log.info("Field : {}, value : {}", clazz + "." + f.getName(), pathValue + "." + o);
+                    log.debug("Field : {}, value : {}", clazz + "." + f.getName(), pathValue + "." + o);
                     f.set(t, documentContext.read(pathValue + "." + o));
                 }
             }
@@ -141,13 +141,13 @@ public class JsonConfigurationParser {
         String json = new String(Files.readAllBytes(new ClassPathResource("orders.json").getFile().toPath()));
         JsonConfigurationParser jsonConfigurationParser = new JsonConfigurationParser();
         Object order = jsonConfigurationParser.read(JsonPath.parse(json), map);
-        System.out.println(order);
+        log.info(order.toString());
 
         map = JsonSchemaReader.readSchema(new String(Files.readAllBytes(new ClassPathResource("personSchema.json").getFile().toPath())));
         json = new String(Files.readAllBytes(new ClassPathResource("person.json").getFile().toPath()));
         jsonConfigurationParser = new JsonConfigurationParser();
         Object person = jsonConfigurationParser.read(JsonPath.parse(json), map);
-        System.out.println(person);
+        log.info(person.toString());
     }
 
 }
